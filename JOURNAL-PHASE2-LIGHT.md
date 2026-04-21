@@ -2,18 +2,19 @@
 
 **Démarrage:** 21 avril 2026  
 **Objectif:** Déployer Worker + D1 pour calcul commissions apporteurs  
-**Status:** 🟡 BLOC 1 en cours
+**Status:** ✅ BLOC 0 TERMINÉ — Prêt pour déploiement Phase 2 LIGHT
 
 ---
 
 ## 📋 Progression
 
-### BLOC 0 — GitHub Actions Setup (NOUVEAU — 21 avril 2026)
+### BLOC 0 — GitHub Actions Setup (✅ COMPLET — 21 avril 2026)
 - [x] Configurer secrets GitHub (CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID)
 - [x] Créer `.github/workflows/deploy-phase2-light.yml` (workflow automatisé)
 - [x] Créer `package.json` (dépendances Wrangler)
 - [x] Créer `.github/workflows/tests-e2e-mock.js` (tests mockés)
-- [ ] **Prochaine étape:** Push vers GitHub pour déclencher workflow
+- [x] Push vers GitHub (✅ Fichiers uploadés via API)
+- **Repo:** https://github.com/harrymathieu971-source/cerveau-declic_phase2-light
 
 ### BLOC 1 — D1 Infra (AUTOMATISÉ via GitHub Actions)
 - [x] Étape 1.1: Wrangler via GitHub (plus local)
