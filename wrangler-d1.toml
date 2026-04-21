@@ -1,0 +1,19 @@
+name = "cerveau-declic-v11"
+main = "cerveau-declic-v11-d1.js"
+compatibility_date = "2024-04-21"
+account_id = "CLOUDFLARE_ACCOUNT_ID"
+
+# Environment: Staging
+[env.staging]
+vars = { ENVIRONMENT = "staging", HUBSPOT_PORTAL_ID = "PLACEHOLDER" }
+d1_databases = [ { binding = "DB", database_name = "apporteurs-crm-staging", id = "STAGING_ID" } ]
+
+# Environment: Production
+[env.production]
+vars = { ENVIRONMENT = "production", HUBSPOT_PORTAL_ID = "PLACEHOLDER" }
+d1_databases = [ { binding = "DB", database_name = "apporteurs-crm-prod", id = "PROD_ID" } ]
+
+# Environment: Development (local)
+[env.development]
+vars = { ENVIRONMENT = "development", HUBSPOT_PORTAL_ID = "PLACEHOLDER" }
+d1_databases = [ { binding = "DB", database_name = "apporteurs-crm-dev", id = "DEV_ID" } ]
