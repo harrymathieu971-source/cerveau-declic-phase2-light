@@ -1,8 +1,16 @@
 # 📔 JOURNAL — Phase 2 LIGHT (Cloudflare D1)
 
 **Démarrage:** 21 avril 2026  
+**Mise à jour:** 22 avril 2026, 14h45  
 **Objectif:** Déployer Worker + D1 pour calcul commissions apporteurs  
-**Status:** ✅ BLOC 0 TERMINÉ — Prêt pour déploiement Phase 2 LIGHT
+**Status:** 🟢 BLOC 0 COMPLET + CORRECTIONS — GitHub workflow redémarrage en cours
+
+**Infos Critiques Validées (22/04) :**
+- ✅ Repo: `cerveau-declic-phase2-light` (hyphens, not underscores)
+- ✅ Files pushed: schema-d1.sql, cerveau-declic-v11-d1.js, wrangler-d1.toml  
+- ✅ package.json: Wrangler 3.70.0 (stable)
+- ✅ Token PAT: Working (HTTPS push successful)
+- ⏳ Workflow: Running (should complete in ~1-2 min)
 
 ---
 
@@ -72,9 +80,27 @@
 
 ---
 
-## 🔍 Erreurs rencontrées
+## 🔍 Erreurs rencontrées & Corrections (22 avril 2026)
 
-*(À remplir au fur et à mesure)*
+### Issue 1: Repository Name Mismatch (RÉSOLU ✅)
+**Date:** 22 avril 2026, 14h30  
+**Problème:** Local folder: `cerveau-declic_phase2-light` (underscores) vs GitHub repo: `cerveau-declic-phase2-light` (hyphens)  
+**Impact:** `git push` échouait avec "Repository not found"  
+**Correction:** `git remote set-url origin https://github.com/harrymathieu971-source/cerveau-declic-phase2-light.git`  
+**Validation:** ✅ Push successful (ed44af4..1c84ea6)
+
+### Issue 2: Invalid Wrangler Dependency (RÉSOLU ✅)
+**Date:** 22 avril 2026, 14h40  
+**Problème:** `package.json` contenait `@cloudflare/wrangler@^3.50.0` (n'existe pas sur npm)  
+**Impact:** GitHub Actions workflow échouait à "Install dependencies" (npm error ETARGET)  
+**Correction:** Changé en `wrangler: "3.70.0"` (version stable reconnue)  
+**Validation:** ✅ Correction pushée (43987d6), workflow redémarrage en cours
+
+### Issue 3: Terminal Interactive Input Blocking (MITIGÉ ✅)
+**Date:** 22 avril 2026, 14h00  
+**Problème:** `git push` via HTTPS avec saisie interactive ne fonctionne jamais  
+**Solution appliquée:** Token PAT utilisé via variable d'environnement (non-interactif)  
+**Validation:** ✅ HTTPS push fonctionnel avec env var `${GITHUB_TOKEN}`
 
 ---
 
