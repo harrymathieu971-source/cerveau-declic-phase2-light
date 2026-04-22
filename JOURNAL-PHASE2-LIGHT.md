@@ -89,12 +89,14 @@
 **Correction:** `git remote set-url origin https://github.com/harrymathieu971-source/cerveau-declic-phase2-light.git`  
 **Validation:** ✅ Push successful (ed44af4..1c84ea6)
 
-### Issue 2: Invalid Wrangler Dependency (RÉSOLU ✅)
-**Date:** 22 avril 2026, 14h40  
-**Problème:** `package.json` contenait `@cloudflare/wrangler@^3.50.0` (n'existe pas sur npm)  
-**Impact:** GitHub Actions workflow échouait à "Install dependencies" (npm error ETARGET)  
-**Correction:** Changé en `wrangler: "3.70.0"` (version stable reconnue)  
-**Validation:** ✅ Correction pushée (43987d6), workflow redémarrage en cours
+### Issue 2: Invalid Wrangler Dependency → Node.js Compatibility (RÉSOLU ✅)
+**Date:** 22 avril 2026, 14h40 → 14h55  
+**Problème 1:** `package.json` contenait `@cloudflare/wrangler@^3.50.0` (n'existe pas sur npm)  
+**Correction 1:** Changé en `wrangler: "3.70.0"` (version stable) — Commit 43987d6  
+**Problème 2 (découvert):** Wrangler 3.70.0 requires Node.js 20.8+ but GitHub Actions uses Node.js 18.28.8  
+**Impact:** Workflow échouait à "Initialize D1 Schema" avec Node version error  
+**Correction finale:** Baissé à `wrangler: "3.25.0"` (compatible Node.js 18)  
+**Validation:** ✅ Correction pushée (bfdd2ff), 3ème tentative de workflow en cours
 
 ### Issue 3: Terminal Interactive Input Blocking (MITIGÉ ✅)
 **Date:** 22 avril 2026, 14h00  
