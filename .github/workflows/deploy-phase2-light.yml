@@ -34,7 +34,7 @@ jobs:
       - name: Create D1 Staging Database
         run: |
           echo "Creating D1 staging database..."
-          wrangler d1 create apporteurs-crm-staging --yes || echo "Database may already exist"
+          wrangler d1 create apporteurs-crm-staging || echo "Database may already exist"
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -102,7 +102,7 @@ jobs:
       - name: Create D1 Production Database
         run: |
           echo "⚠️ Production databases will be created on first push..."
-          wrangler d1 create apporteurs-crm-prod --yes || echo "Production database may already exist"
+          wrangler d1 create apporteurs-crm-prod || echo "Production database may already exist"
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
