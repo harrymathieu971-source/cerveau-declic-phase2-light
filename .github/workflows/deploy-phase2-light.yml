@@ -31,30 +31,38 @@ jobs:
       - name: Install Wrangler globally
         run: npm install -g wrangler@3.25.0
 
-      - name: Create D1 Staging Database and get real ID
+      - name: Create D1 Staging Database
         run: |
-          echo "Creating D1 staging database..."
-          CREATE_OUT=$(wrangler d1 create apporteurs-crm-staging 2>&1 || true)
-          echo "$CREATE_OUT"
+          echo "Creating D1 staging database (ignored if already exists)..."
+          wrangler d1 create apporteurs-crm-staging 2>&1 || echo "DB already exists, continuing..."
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
-          # Try to extract UUID from create output (format: database_id = "uuid")
-          DB_UUID=$(echo "$CREATE_OUT" | grep 'database_id' | grep -oE '[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}' | head -1)
-
-          # Fallback: get UUID from list (DB already exists)
+      - name: Get D1 Staging UUID via Cloudflare API
+        run: |
+          echo "Fetching staging DB UUID from Cloudflare REST API..."
+          API_RESP=$(curl -s \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/d1/database?per_page=100")
+          
+          DB_UUID=$(echo "$API_RESP" | python3 -c "
+import json, sys
+data = json.loads(sys.stdin.read())
+for db in data.get('result', []):
+    if db.get('name') == 'apporteurs-crm-staging':
+        print(db.get('uuid', ''))
+        break
+" 2>/dev/null)
+          
+          echo "Staging DB UUID: '$DB_UUID'"
           if [ -z "$DB_UUID" ]; then
-            echo "DB already exists, fetching from wrangler d1 list..."
-            LIST_OUT=$(wrangler d1 list 2>&1)
-            echo "$LIST_OUT"
-            DB_UUID=$(echo "$LIST_OUT" | grep 'apporteurs-crm-staging' | grep -oE '[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}' | head -1)
-          fi
-
-          echo "Staging DB UUID: $DB_UUID"
-          if [ -z "$DB_UUID" ]; then
-            echo "❌ ERROR: could not retrieve staging DB UUID"
+            echo "❌ ERROR: could not retrieve staging DB UUID from Cloudflare API"
+            echo "API response: $API_RESP"
             exit 1
           fi
-
-          # Inject real UUID into wrangler-d1.toml
+          
           sed -i "s/database_id = \"STAGING_ID\"/database_id = \"$DB_UUID\"/" wrangler-d1.toml
           echo "✅ wrangler-d1.toml updated with staging DB ID: $DB_UUID"
         env:
@@ -87,7 +95,6 @@ jobs:
         if: success()
         run: |
           echo "✅ Phase 2 LIGHT staging deployment successful!"
-          echo "Worker deployed to: staging.immobilierlieusaint.fr/api/*"
           echo "D1 databases created: apporteurs-crm-staging"
 
       - name: Notify Failure
@@ -121,27 +128,38 @@ jobs:
       - name: Install Wrangler globally
         run: npm install -g wrangler@3.25.0
 
-      - name: Create D1 Production Database and get real ID
+      - name: Create D1 Production Database
         run: |
-          echo "Creating D1 production database..."
-          CREATE_OUT=$(wrangler d1 create apporteurs-crm-prod 2>&1 || true)
-          echo "$CREATE_OUT"
+          echo "Creating D1 production database (ignored if already exists)..."
+          wrangler d1 create apporteurs-crm-prod 2>&1 || echo "DB already exists, continuing..."
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
-          DB_UUID=$(echo "$CREATE_OUT" | grep 'database_id' | grep -oE '[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}' | head -1)
-
+      - name: Get D1 Production UUID via Cloudflare API
+        run: |
+          echo "Fetching production DB UUID from Cloudflare REST API..."
+          API_RESP=$(curl -s \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/d1/database?per_page=100")
+          
+          DB_UUID=$(echo "$API_RESP" | python3 -c "
+import json, sys
+data = json.loads(sys.stdin.read())
+for db in data.get('result', []):
+    if db.get('name') == 'apporteurs-crm-prod':
+        print(db.get('uuid', ''))
+        break
+" 2>/dev/null)
+          
+          echo "Production DB UUID: '$DB_UUID'"
           if [ -z "$DB_UUID" ]; then
-            echo "DB already exists, fetching from wrangler d1 list..."
-            LIST_OUT=$(wrangler d1 list 2>&1)
-            echo "$LIST_OUT"
-            DB_UUID=$(echo "$LIST_OUT" | grep 'apporteurs-crm-prod' | grep -oE '[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}' | head -1)
-          fi
-
-          echo "Production DB UUID: $DB_UUID"
-          if [ -z "$DB_UUID" ]; then
-            echo "❌ ERROR: could not retrieve production DB UUID"
+            echo "❌ ERROR: could not retrieve production DB UUID from Cloudflare API"
+            echo "API response: $API_RESP"
             exit 1
           fi
-
+          
           sed -i "s/database_id = \"PROD_ID\"/database_id = \"$DB_UUID\"/" wrangler-d1.toml
           echo "✅ wrangler-d1.toml updated with production DB ID: $DB_UUID"
         env:
@@ -164,16 +182,11 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
-      - name: Verify Production Deployment
-        run: |
-          echo "✅ Production deployment complete!"
-          echo "Route: simu.immobilierlieusaint.fr/api/calcul-commission-apporteur"
-
       - name: Post-Deployment Checklist
         run: |
           echo "📋 Post-deployment checklist:"
-          echo "1. Verify ping: GET simu.immobilierlieusaint.fr/api/ping"
-          echo "2. Test calculation: POST /calcul-commission-apporteur with test data"
-          echo "3. Check D1: wrangler d1 execute apporteurs-crm-prod --command 'SELECT * FROM commissions'"
-          echo "4. Verify HubSpot Deal property update"
-          echo "5. Check email notification received at harry@immobilierlieusaint.fr"
+          echo "1. Test ping: GET simu.immobilierlieusaint.fr/api/ping"
+          echo "2. Test calcul: POST /calcul-commission-apporteur"
+          echo "3. Vérifier D1: wrangler d1 execute apporteurs-crm-prod --command 'SELECT * FROM commissions'"
+          echo "4. Vérifier mise à jour Deal HubSpot"
+          echo "5. Vérifier email reçu à harry@immobilierlieusaint.fr"
