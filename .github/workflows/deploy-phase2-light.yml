@@ -29,7 +29,7 @@ jobs:
         run: npm install
 
       - name: Install Wrangler globally
-        run: npm install -g wrangler@2.20.0
+        run: npm install -g wrangler@3.25.0
 
       - name: Create D1 Staging Database
         run: |
@@ -97,7 +97,7 @@ jobs:
         run: npm install
 
       - name: Install Wrangler globally
-        run: npm install -g wrangler@2.20.0
+        run: npm install -g wrangler@3.25.0
 
       - name: Create D1 Production Database
         run: |
