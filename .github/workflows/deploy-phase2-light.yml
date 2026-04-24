@@ -42,7 +42,7 @@ jobs:
       - name: Initialize D1 Schema
         run: |
           echo "Initializing schema..."
-          wrangler d1 execute apporteurs-crm-staging --file schema-d1.sql
+          wrangler d1 execute apporteurs-crm-staging --file schema-d1.sql --config wrangler-d1.toml --remote
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -50,7 +50,7 @@ jobs:
       - name: Deploy Worker to Staging
         run: |
           echo "Deploying Worker v11 to staging..."
-          wrangler deploy --env staging
+          wrangler deploy --env staging --config wrangler-d1.toml
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -110,7 +110,7 @@ jobs:
       - name: Initialize D1 Production Schema
         run: |
           echo "Initializing production schema..."
-          wrangler d1 execute apporteurs-crm-prod --file schema-d1.sql
+          wrangler d1 execute apporteurs-crm-prod --file schema-d1.sql --config wrangler-d1.toml --remote
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -118,7 +118,7 @@ jobs:
       - name: Deploy Worker to Production
         run: |
           echo "🚀 Deploying Worker v11 to production..."
-          wrangler deploy --env production
+          wrangler deploy --env production --config wrangler-d1.toml
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

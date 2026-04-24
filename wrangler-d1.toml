@@ -1,7 +1,6 @@
 name = "cerveau-declic-v11"
 main = "cerveau-declic-v11-d1.js"
 compatibility_date = "2024-04-21"
-account_id = "CLOUDFLARE_ACCOUNT_ID"
 
 # Environment: Staging
 [env.staging]
