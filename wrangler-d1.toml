@@ -4,15 +4,15 @@ compatibility_date = "2024-04-21"
 
 # Environment: Staging
 [env.staging]
-vars = { ENVIRONMENT = "staging", HUBSPOT_PORTAL_ID = "PLACEHOLDER" }
+vars = { ENVIRONMENT = "staging", HUBSPOT_PORTAL_ID = "146367337" }
 d1_databases = [ { binding = "DB", database_name = "apporteurs-crm-staging", database_id = "STAGING_ID" } ]
 
 # Environment: Production
 [env.production]
-vars = { ENVIRONMENT = "production", HUBSPOT_PORTAL_ID = "PLACEHOLDER" }
+vars = { ENVIRONMENT = "production", HUBSPOT_PORTAL_ID = "146367337" }
 d1_databases = [ { binding = "DB", database_name = "apporteurs-crm-prod", database_id = "PROD_ID" } ]
 
 # Environment: Development (local)
 [env.development]
-vars = { ENVIRONMENT = "development", HUBSPOT_PORTAL_ID = "PLACEHOLDER" }
+vars = { ENVIRONMENT = "development", HUBSPOT_PORTAL_ID = "146367337" }
 d1_databases = [ { binding = "DB", database_name = "apporteurs-crm-dev", database_id = "DEV_ID" } ]
