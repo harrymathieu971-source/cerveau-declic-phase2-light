@@ -42,29 +42,16 @@ jobs:
       - name: Get D1 Staging UUID via Cloudflare API
         run: |
           echo "Fetching staging DB UUID from Cloudflare REST API..."
-          API_RESP=$(curl -s \
-            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-            -H "Content-Type: application/json" \
-            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/d1/database?per_page=100")
-          
-          DB_UUID=$(echo "$API_RESP" | python3 -c "
-import json, sys
-data = json.loads(sys.stdin.read())
-for db in data.get('result', []):
-    if db.get('name') == 'apporteurs-crm-staging':
-        print(db.get('uuid', ''))
-        break
-" 2>/dev/null)
-          
+          API_RESP=$(curl -s -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/d1/database?per_page=100")
+          DB_UUID=$(echo "$API_RESP" | jq -r '.result[] | select(.name=="apporteurs-crm-staging") | .uuid // empty' 2>/dev/null || echo "")
           echo "Staging DB UUID: '$DB_UUID'"
           if [ -z "$DB_UUID" ]; then
-            echo "❌ ERROR: could not retrieve staging DB UUID from Cloudflare API"
             echo "API response: $API_RESP"
+            echo "ERROR: could not retrieve staging DB UUID"
             exit 1
           fi
-          
           sed -i "s/database_id = \"STAGING_ID\"/database_id = \"$DB_UUID\"/" wrangler-d1.toml
-          echo "✅ wrangler-d1.toml updated with staging DB ID: $DB_UUID"
+          echo "wrangler-d1.toml updated with staging DB ID: $DB_UUID"
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -93,15 +80,11 @@ for db in data.get('result', []):
 
       - name: Notify Success
         if: success()
-        run: |
-          echo "✅ Phase 2 LIGHT staging deployment successful!"
-          echo "D1 databases created: apporteurs-crm-staging"
+        run: echo "Phase 2 LIGHT staging deployment successful!"
 
       - name: Notify Failure
         if: failure()
-        run: |
-          echo "❌ Phase 2 LIGHT deployment failed!"
-          echo "Check logs above for details"
+        run: echo "Phase 2 LIGHT deployment failed — check logs above"
         continue-on-error: true
 
   deploy-production:
@@ -139,29 +122,16 @@ for db in data.get('result', []):
       - name: Get D1 Production UUID via Cloudflare API
         run: |
           echo "Fetching production DB UUID from Cloudflare REST API..."
-          API_RESP=$(curl -s \
-            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-            -H "Content-Type: application/json" \
-            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/d1/database?per_page=100")
-          
-          DB_UUID=$(echo "$API_RESP" | python3 -c "
-import json, sys
-data = json.loads(sys.stdin.read())
-for db in data.get('result', []):
-    if db.get('name') == 'apporteurs-crm-prod':
-        print(db.get('uuid', ''))
-        break
-" 2>/dev/null)
-          
+          API_RESP=$(curl -s -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/d1/database?per_page=100")
+          DB_UUID=$(echo "$API_RESP" | jq -r '.result[] | select(.name=="apporteurs-crm-prod") | .uuid // empty' 2>/dev/null || echo "")
           echo "Production DB UUID: '$DB_UUID'"
           if [ -z "$DB_UUID" ]; then
-            echo "❌ ERROR: could not retrieve production DB UUID from Cloudflare API"
             echo "API response: $API_RESP"
+            echo "ERROR: could not retrieve production DB UUID"
             exit 1
           fi
-          
           sed -i "s/database_id = \"PROD_ID\"/database_id = \"$DB_UUID\"/" wrangler-d1.toml
-          echo "✅ wrangler-d1.toml updated with production DB ID: $DB_UUID"
+          echo "wrangler-d1.toml updated with production DB ID: $DB_UUID"
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -176,7 +146,7 @@ for db in data.get('result', []):
 
       - name: Deploy Worker to Production
         run: |
-          echo "🚀 Deploying Worker v11 to production..."
+          echo "Deploying Worker v11 to production..."
           wrangler deploy --env production --config wrangler-d1.toml
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -184,9 +154,8 @@ for db in data.get('result', []):
 
       - name: Post-Deployment Checklist
         run: |
-          echo "📋 Post-deployment checklist:"
-          echo "1. Test ping: GET simu.immobilierlieusaint.fr/api/ping"
-          echo "2. Test calcul: POST /calcul-commission-apporteur"
-          echo "3. Vérifier D1: wrangler d1 execute apporteurs-crm-prod --command 'SELECT * FROM commissions'"
-          echo "4. Vérifier mise à jour Deal HubSpot"
-          echo "5. Vérifier email reçu à harry@immobilierlieusaint.fr"
+          echo "Post-deployment checklist:"
+          echo "1. Test: GET simu.immobilierlieusaint.fr/api/ping"
+          echo "2. Test: POST /calcul-commission-apporteur"
+          echo "3. Verifier Deal HubSpot mis a jour"
+          echo "4. Verifier email recu a harry@immobilierlieusaint.fr"
